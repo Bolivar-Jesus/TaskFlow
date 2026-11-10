@@ -1,0 +1,73 @@
+@startuml componentes
+!theme plain
+skinparam componentStyle uml2
+skinparam handwritten false
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam packageBorderColor #4A5568
+skinparam componentBorderColor #2B6CB0
+skinparam componentBackgroundColor #EBF8FF
+
+title Diagrama de Componentes - TaskFlow (Sistema Distribuido)
+
+package "Cliente (Navegador Web)" {
+  [Interfaz Web\n(HTML5 / CSS3 / Vanilla JS)] as UI
+}
+
+package "Nodo 1: Servidor Coordinador (localhost:3000)" #F7FAFC {
+  [Servidor Estático HTTP] as StaticServer
+  
+  package "API REST & Mediación" {
+    [Controlador REST\n(/api/tasks, /api/health...)] as RestAPI
+    [Coordinador\n<<Proxy & Mediator>>] as Coordinator
+    [Balanceador\n<<Round Robin>>] as LoadBalancer
+    [Gestor de Métricas\ny Estado en Memoria] as StateManager
+  }
+}
+
+package "Nodo 2: Trabajador A (localhost:3001)" #EDF2F7 {
+  [Servidor HTTP Trabajador A] as WorkerServerA
+  [Cola FIFO de Espera A] as QueueA
+  
+  package "Pool de Concurrencia A" {
+    [Worker Thread A1\n(task-thread.js)] as ThreadA1
+    [Worker Thread A2\n(task-thread.js)] as ThreadA2
+  }
+}
+
+package "Nodo 3: Trabajador B (localhost:3002)" #EDF2F7 {
+  [Servidor HTTP Trabajador B] as WorkerServerB
+  [Cola FIFO de Espera B] as QueueB
+  
+  package "Pool de Concurrencia B" {
+    [Worker Thread B1\n(task-thread.js)] as ThreadB1
+    [Worker Thread B2\n(task-thread.js)] as ThreadB2
+  }
+}
+
+' Relaciones entre componentes
+UI ..> StaticServer : HTTP GET /\n(Carga HTML/CSS/JS)
+UI --> RestAPI : HTTP REST (JSON)\n(POST /api/tasks, GET /api/metrics)
+
+RestAPI --> Coordinator : Procesa Solicitud
+Coordinator --> LoadBalancer : Consulta Próximo Trabajador
+Coordinator --> StateManager : Registra y Actualiza Tareas
+
+Coordinator --> WorkerServerA : HTTP POST /execute\nHTTP GET /health
+Coordinator --> WorkerServerB : HTTP POST /execute\nHTTP GET /health
+
+WorkerServerA --> QueueA : Encola si hilos ocupados
+WorkerServerA --> ThreadA1 : Mensaje IPC / worker_threads
+WorkerServerA --> ThreadA2 : Mensaje IPC / worker_threads
+
+WorkerServerB --> QueueB : Encola si hilos ocupados
+WorkerServerB --> ThreadB1 : Mensaje IPC / worker_threads
+WorkerServerB --> ThreadB2 : Mensaje IPC / worker_threads
+
+note right of Coordinator
+  <b>Patrón Proxy:</b> Oculta los puertos 3001 y 3002 al cliente.
+  <b>Patrón Mediator:</b> Centraliza la comunicación y tolerancia
+  a fallos sin que los trabajadores se conozcan.
+end note
+
+@enduml

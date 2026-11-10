@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow - Sistema Distribuido de Procesamiento de Tareas</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Encabezado Principal -->
+    <header class="header">
+      <div class="header-content">
+        <div class="brand">
+          <span class="brand-icon">⚡</span>
+          <div>
+            <h1>TaskFlow</h1>
+            <p class="subtitle">Sistema Distribuido de Procesamiento Concurrente de Tareas</p>
+          </div>
+        </div>
+        <div class="system-status-indicator" id="coordinator-indicator">
+          <span class="status-dot online"></span>
+          <span class="status-text" id="coordinator-status-text">Coordinador en Línea</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Panel de Arquitectura y Estado de Nodos -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="icon">🖥️</span> Topología y Estado de los Nodos
+      </h2>
+      <div class="nodes-grid">
+        <!-- Tarjeta Coordinador -->
+        <div class="node-card coordinator-card" id="card-coordinator">
+          <div class="node-header">
+            <div class="node-info">
+              <span class="node-role">Nodo Principal</span>
+              <h3 class="node-name">Servidor Coordinador</h3>
+              <span class="node-endpoint">http://localhost:3000</span>
+            </div>
+            <span class="badge badge-success" id="badge-coordinator">Activo</span>
+          </div>
+          <div class="node-patterns">
+            <span class="pattern-tag" title="Oculta los nodos trabajadores al cliente">Patrón Proxy</span>
+            <span class="pattern-tag" title="Centraliza y arbitra la comunicación">Patrón Mediator</span>
+          </div>
+          <div class="node-stats">
+            <div class="stat-mini">
+              <span class="stat-mini-label">Uptime</span>
+              <span class="stat-mini-value" id="coordinator-uptime">0s</span>
+            </div>
+            <div class="stat-mini">
+              <span class="stat-mini-label">Estrategia</span>
+              <span class="stat-mini-value">Round Robin</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta Trabajador A -->
+        <div class="node-card worker-card" id="card-worker-a">
+          <div class="node-header">
+            <div class="node-info">
+              <span class="node-role">Nodo de Ejecución</span>
+              <h3 class="node-name">Trabajador A</h3>
+              <span class="node-endpoint">http://localhost:3001</span>
+            </div>
+            <span class="badge" id="badge-worker-a">Consultando...</span>
+          </div>
+          <div class="worker-details">
+            <div class="threads-visualizer">
+              <span class="threads-label">Hilos Activos (Pool de 2):</span>
+              <div class="thread-bars" id="threads-worker-a">
+                <span class="thread-dot" id="wa-thread-1">H1</span>
+                <span class="thread-dot" id="wa-thread-2">H2</span>
+              </div>
+            </div>
+            <div class="node-stats">
+              <div class="stat-mini">
+                <span class="stat-mini-label">Cola Espera</span>
+                <span class="stat-mini-value" id="wa-queue">0</span>
+              </div>
+              <div class="stat-mini">
+                <span class="stat-mini-label">Procesadas</span>
+                <span class="stat-mini-value" id="wa-processed">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta Trabajador B -->
+        <div class="node-card worker-card" id="card-worker-b">
+          <div class="node-header">
+            <div class="node-info">
+              <span class="node-role">Nodo de Ejecución</span>
+              <h3 class="node-name">Trabajador B</h3>
+              <span class="node-endpoint">http://localhost:3002</span>
+            </div>
+            <span class="badge" id="badge-worker-b">Consultando...</span>
+          </div>
+          <div class="worker-details">
+            <div class="threads-visualizer">
+              <span class="threads-label">Hilos Activos (Pool de 2):</span>
+              <div class="thread-bars" id="threads-worker-b">
+                <span class="thread-dot" id="wb-thread-1">H1</span>
+                <span class="thread-dot" id="wb-thread-2">H2</span>
+              </div>
+            </div>
+            <div class="node-stats">
+              <div class="stat-mini">
+                <span class="stat-mini-label">Cola Espera</span>
+                <span class="stat-mini-value" id="wb-queue">0</span>
+              </div>
+              <div class="stat-mini">
+                <span class="stat-mini-label">Procesadas</span>
+                <span class="stat-mini-value" id="wb-processed">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Métricas del Sistema -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="icon">📊</span> Métricas Generales del Sistema
+      </h2>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <span class="metric-label">Tareas Recibidas</span>
+          <span class="metric-value" id="metric-total">0</span>
+        </div>
+        <div class="metric-card success">
+          <span class="metric-label">Tareas Completadas</span>
+          <span class="metric-value text-success" id="metric-completed">0</span>
+        </div>
+        <div class="metric-card danger">
+          <span class="metric-label">Tareas Fallidas</span>
+          <span class="metric-value text-danger" id="metric-failed">0</span>
+        </div>
+        <div class="metric-card info">
+          <span class="metric-label">Tiempo Promedio</span>
+          <span class="metric-value" id="metric-avg-time">0 ms</span>
+        </div>
+      </div>
+
+      <!-- Barra de Distribución de Carga -->
+      <div class="load-balance-bar-container">
+        <div class="load-balance-header">
+          <span>Distribución de Carga entre Nodos</span>
+          <span id="load-balance-ratio">Trabajador A: 0 | Trabajador B: 0</span>
+        </div>
+        <div class="load-balance-track">
+          <div class="load-segment segment-a" id="bar-worker-a" style="width: 50%;">Trabajador A (50%)</div>
+          <div class="load-segment segment-b" id="bar-worker-b" style="width: 50%;">Trabajador B (50%)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Formulario para Enviar Tareas -->
+    <section class="section">
+      <div class="card-action-panel">
+        <div class="action-header">
+          <h2 class="section-title" style="margin-bottom: 0;">
+            <span class="icon">🚀</span> Enviar Nueva Tarea de Procesamiento
+          </h2>
+          <span class="action-subtitle">Cálculo concurrente de números primos con Worker Threads</span>
+        </div>
+        
+        <form id="task-form" class="task-form">
+          <div class="form-group">
+            <label for="limit-input">Límite Superior para Cálculo de Primos:</label>
+            <div class="input-with-presets">
+              <input type="number" id="limit-input" name="limit" min="100" max="10000000" value="500000" required>
+              <div class="preset-buttons">
+                <button type="button" class="btn-preset" data-limit="100000">100k</button>
+                <button type="button" class="btn-preset" data-limit="500000">500k</button>
+                <button type="button" class="btn-preset" data-limit="1000000">1M</button>
+                <button type="button" class="btn-preset" data-limit="2000000">2M</button>
+              </div>
+            </div>
+            <small class="form-hint">Valores recomendados: 500,000 (~30ms) a 2,000,000 (~180ms) para observar concurrencia clara.</small>
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="btn-submit">
+              <span>▶ Enviar Tarea</span>
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-burst">
+              <span>⚡ Ráfaga Concurrente (4 Tareas)</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Tabla Histórica de Tareas -->
+    <section class="section">
+      <div class="table-header-container">
+        <h2 class="section-title">
+          <span class="icon">📋</span> Registro y Estado de Tareas
+        </h2>
+        <span class="refresh-indicator" id="refresh-status">
+          <span class="spinner"></span> Actualizando cada 1.5s...
+        </span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="tasks-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Límite</th>
+              <th>Estado</th>
+              <th>Nodo Asignado</th>
+              <th>Hilo</th>
+              <th>Tiempo (ms)</th>
+              <th>Primos Hallados</th>
+              <th>Muestra</th>
+              <th>Hora</th>
+            </tr>
+          </thead>
+          <tbody id="tasks-tbody">
+            <tr class="empty-row">
+              <td colspan="9">No hay tareas registradas aún. ¡Envía una tarea arriba!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Pie de Página -->
+    <footer class="footer">
+      <p>TaskFlow &copy; Prototipo Académico de Arquitectura Distribuida con Node.js y Worker Threads.</p>
+      <p class="footer-links">
+        API REST: 
+        <a href="/api/health" target="_blank">/api/health</a> | 
+        <a href="/api/workers" target="_blank">/api/workers</a> | 
+        <a href="/api/tasks" target="_blank">/api/tasks</a> | 
+        <a href="/api/metrics" target="_blank">/api/metrics</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

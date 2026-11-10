@@ -1,0 +1,28 @@
+{
+  "name": "taskflow",
+  "version": "1.0.0",
+  "description": "TaskFlow - Sistema Distribuido de Procesamiento de Tareas con Node.js y Worker Threads",
+  "main": "coordinator/server.js",
+  "scripts": {
+    "start": "node scripts/start-all.js",
+    "start:coordinator": "node coordinator/server.js",
+    "start:worker-a": "node workers/worker-server.js 3001 \"Trabajador A\"",
+    "start:worker-b": "node workers/worker-server.js 3002 \"Trabajador B\"",
+    "test": "node tests/run-all-tests.js",
+    "test:basic": "node tests/basic-test.js",
+    "test:concurrency": "node tests/concurrency-test.js",
+    "test:distribution": "node tests/load-distribution-test.js",
+    "test:scalability": "node tests/scalability-test.js",
+    "test:robustness": "node tests/robustness-test.js"
+  },
+  "keywords": [
+    "distributed-systems",
+    "worker-threads",
+    "proxy-pattern",
+    "mediator-pattern",
+    "nodejs"
+  ],
+  "author": "TaskFlow Team",
+  "license": "MIT",
+  "dependencies": {}
+}

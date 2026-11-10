@@ -1,0 +1,71 @@
+@startuml secuencia
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam participantPadding 15
+skinparam boxPadding 10
+
+title Diagrama de Secuencia - Ciclo de Vida de Procesamiento de una Tarea
+
+actor "Usuario" as User
+participant "Interfaz Web\n(app.js)" as UI
+box "Nodo Principal (Puerto 3000)" #F7FAFC
+  participant "API REST\n(server.js)" as API
+  participant "Coordinador\n<<Proxy/Mediator>>" as Coord
+end box
+
+box "Nodo Trabajador (Puerto 3001/3002)" #EDF2F7
+  participant "Servidor Trabajador\n(worker-server.js)" as Worker
+  participant "Worker Thread\n(task-thread.js)" as Thread
+end box
+
+== 1. Creación y Despacho de la Tarea ==
+User -> UI : Ingresa límite (ej: 500,000) y pulsa "Enviar Tarea"
+activate UI
+UI -> API : HTTP POST /api/tasks { limit: 500000 }
+activate API
+
+API -> Coord : dispatchTaskWithFailover(task)
+activate Coord
+Coord -> Coord : Registra tarea (estado: "pendiente")
+Coord -> Coord : selectWorkerRoundRobin()\n(evalúa disponibilidad y turno)
+
+note over Coord
+  <b>Patrón Mediator:</b> El coordinador decide
+  enrutar la tarea al Trabajador A
+end note
+
+Coord -> Worker : HTTP POST /execute { taskId: "task-1", limit: 500000 }
+activate Worker
+
+== 2. Asignación y Procesamiento Concurrente ==
+Worker -> Worker : Verifica hilos libres en Pool (2 hilos)
+Worker -> Thread : worker.postMessage({ taskId, limit, internalThreadIndex })
+activate Thread
+Worker --> Coord : Tarea aceptada en ejecución
+
+Thread -> Thread : isPrime(n) y cálculo de números primos\n(Cálculo intensivo de CPU)
+Thread -> Thread : Mide tiempo de cómputo (performance.now)
+
+Thread --> Worker : parentPort.postMessage({ success: true, primesCount, executionTimeMs, samplePrimes })
+deactivate Thread
+
+== 3. Devolución de Resultados y Actualización de Métricas ==
+Worker --> Coord : HTTP 200 OK { success: true, primesCount: 41538, executionTimeMs: 28.5ms }
+deactivate Worker
+
+Coord -> Coord : Actualiza estado tarea a "completada"
+Coord -> Coord : Actualiza métricas globales\n(tareas completadas, promedio ms, conteo por nodo)
+Coord --> API : Devuelve tarea completada
+deactivate Coord
+
+API --> UI : HTTP 201 Created (JSON Tarea)
+deactivate API
+
+== 4. Visualización en Tiempo Real ==
+UI -> UI : Actualiza tabla histórica y tarjetas de métricas
+UI --> User : Muestra resultado (41,538 primos en 28.5 ms)
+deactivate UI
+
+@enduml

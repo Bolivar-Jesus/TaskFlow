@@ -1,0 +1,78 @@
+{
+  "suiteName": "TaskFlow Automated Evaluation Suite",
+  "executedAt": "2026-11-10T20:31:34.036Z",
+  "totalSuiteDurationMs": 19465.44,
+  "summary": {
+    "totalTests": 5,
+    "testsPassed": 5,
+    "testsFailed": 0,
+    "allPassed": true,
+    "totalTasksSent": 27,
+    "totalTasksCompleted": 27,
+    "totalTasksFailed": 0
+  },
+  "tests": [
+    {
+      "name": "Prueba 1 - Funcionamiento Básico",
+      "success": true,
+      "tasksSent": 1,
+      "tasksCompleted": 1,
+      "tasksFailed": 0,
+      "totalDurationMs": 224.19,
+      "avgProcessingTimeMs": 79.47,
+      "details": "Tarea task-1 completada exitosamente por Trabajador A (Hilo #1). Primos hallados: 41538.",
+      "workerStats": {
+        "Trabajador A": 1,
+        "Trabajador B": 0
+      }
+    },
+    {
+      "name": "Prueba 2 - Concurrencia",
+      "success": true,
+      "tasksSent": 4,
+      "tasksCompleted": 4,
+      "tasksFailed": 0,
+      "totalDurationMs": 378.67,
+      "avgProcessingTimeMs": 224.37,
+      "details": "4 tareas concurrentes procesadas en paralelo. Suma CPU: 897.5ms vs Tiempo Real: 378.7ms.",
+      "workerStats": {
+        "Trabajador A": 2,
+        "Trabajador B": 2
+      }
+    },
+    {
+      "name": "Prueba 3 - Distribución de Carga",
+      "success": true,
+      "tasksSent": 8,
+      "tasksCompleted": 8,
+      "tasksFailed": 0,
+      "totalDurationMs": 700.84,
+      "avgProcessingTimeMs": 65.08,
+      "details": "Distribución Round Robin perfecta: Trabajador A (4 tareas) | Trabajador B (4 tareas).",
+      "workerStats": {
+        "Trabajador A": 4,
+        "Trabajador B": 4
+      }
+    },
+    {
+      "name": "Prueba 4 - Escalabilidad",
+      "success": true,
+      "tasksSent": 12,
+      "tasksCompleted": 12,
+      "tasksFailed": 0,
+      "totalDurationMs": 1153.31,
+      "avgProcessingTimeMs": 228.57,
+      "details": "1 Trabajador: 574.61ms vs 2 Trabajadores: 578.7ms. Speedup real obtenido: 0.99x (mejora de -1%)."
+    },
+    {
+      "name": "Prueba 5 - Robustez y Tolerancia a Fallos",
+      "success": true,
+      "tasksSent": 2,
+      "tasksCompleted": 2,
+      "tasksFailed": 0,
+      "totalDurationMs": 2136.52,
+      "avgProcessingTimeMs": 67,
+      "details": "Trabajador B detenido abruptamente. El sistema detectó la falla, redirigió 100% de las tareas a Trabajador A sin pérdida de datos."
+    }
+  ]
+}

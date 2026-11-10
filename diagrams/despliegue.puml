@@ -1,0 +1,57 @@
+@startuml despliegue
+!theme plain
+skinparam nodeBorderColor #2D3748
+skinparam nodeBackgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam shadowing false
+
+title Diagrama de Despliegue - TaskFlow (Topología Distribuida)
+
+node "Dispositivo Cliente" as ClientDevice <<Device>> {
+  node "Navegador Web (Chrome / Edge / Firefox)" <<Execution Environment>> {
+    artifact "TaskFlow Web UI\n(HTML5, CSS3, app.js)" as ClientArtifact
+  }
+}
+
+node "Servidor Local (Host: Windows / PowerShell)" <<Device>> {
+  
+  node "Nodo 1: Servidor Principal\n[localhost:3000]" <<Execution Environment: Node.js>> {
+    artifact "coordinator/server.js" as CoordArtifact
+    component "Proxy Inverso &\nMediador REST" as ProxyComp
+    component "Memoria RAM\n(Estado de Tareas & Métricas)" as RAMStore
+  }
+
+  node "Nodo 2: Trabajador A\n[localhost:3001]" <<Execution Environment: Node.js>> {
+    artifact "workers/worker-server.js\n(Instancia A)" as WorkerAServer
+    component "Cola FIFO de Tareas" as QueueAComp
+    
+    node "Pool de Hilos Nativo (A)" <<Worker Threads>> {
+      component "Hilo de Ejecución 1\n(task-thread.js)" as ThreadA1
+      component "Hilo de Ejecución 2\n(task-thread.js)" as ThreadA2
+    }
+  }
+
+  node "Nodo 3: Trabajador B\n[localhost:3002]" <<Execution Environment: Node.js>> {
+    artifact "workers/worker-server.js\n(Instancia B)" as WorkerBServer
+    component "Cola FIFO de Tareas" as QueueBComp
+    
+    node "Pool de Hilos Nativo (B)" <<Worker Threads>> {
+      component "Hilo de Ejecución 1\n(task-thread.js)" as ThreadB1
+      component "Hilo de Ejecución 2\n(task-thread.js)" as ThreadB2
+    }
+  }
+}
+
+' Canales y Protocolos de Comunicación
+ClientArtifact -- CoordArtifact : HTTP REST (TCP :3000)\n[JSON / Static Files]
+
+ProxyComp -- WorkerAServer : HTTP REST (TCP :3001)\n[/execute, /health]
+ProxyComp -- WorkerBServer : HTTP REST (TCP :3002)\n[/execute, /health]
+
+WorkerAServer ..> ThreadA1 : worker_threads IPC
+WorkerAServer ..> ThreadA2 : worker_threads IPC
+
+WorkerBServer ..> ThreadB1 : worker_threads IPC
+WorkerBServer ..> ThreadB2 : worker_threads IPC
+
+@enduml

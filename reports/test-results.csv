@@ -1,0 +1,6 @@
+Prueba,TareasEnviadas,TareasCompletadas,TareasFallidas,TiempoTotalMs,TiempoPromedioMs,Detalles
+"Prueba 1 - Funcionamiento Básico",1,1,0,224.19,79.47,"Tarea task-1 completada exitosamente por Trabajador A (Hilo #1). Primos hallados: 41538."
+"Prueba 2 - Concurrencia",4,4,0,378.67,224.37,"4 tareas concurrentes procesadas en paralelo. Suma CPU: 897.5ms vs Tiempo Real: 378.7ms."
+"Prueba 3 - Distribución de Carga",8,8,0,700.84,65.08,"Distribución Round Robin perfecta: Trabajador A (4 tareas) | Trabajador B (4 tareas)."
+"Prueba 4 - Escalabilidad",12,12,0,1153.31,228.57,"1 Trabajador: 574.61ms vs 2 Trabajadores: 578.7ms. Speedup real obtenido: 0.99x (mejora de -1%)."
+"Prueba 5 - Robustez y Tolerancia a Fallos",2,2,0,2136.52,67,"Trabajador B detenido abruptamente. El sistema detectó la falla, redirigió 100% de las tareas a Trabajador A sin pérdida de datos."
